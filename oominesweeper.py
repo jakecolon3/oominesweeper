@@ -40,7 +40,7 @@ class Game:
             break
         return(self.difficulty)
 
-    # takes an input, tried to turn it into an integer and sets it as the custom seed or, if input = 0, randomizes the seed
+    # takes an input, tries to turn it into an integer and sets it as the custom seed or, if input = 0, randomizes the seed
     def set_seed(self):
         while True:
             print("\ntype seed (0 to randomize): ")
@@ -83,7 +83,6 @@ class Game:
                 self.difficulty = EXPERT
             elif self.difficulty == 4:
                 self.difficulty = self.custom_difficulty()
-
             break
         return(self.difficulty)
 
@@ -333,7 +332,7 @@ class Sweep(Action):
         self.actions.board_matrix[row][column] = self.action_type
         self.display.board_matrix[row][column] = self.numbers.board_matrix[row][column]
 
-    # sweeps the current cells then calls itself on all adjacent cells if the current cell is 0 
+    # sweeps the current cells then calls itself on all adjacent cells if the current cell is 0
     def recursive_sweep(self, row, column):
         if self.numbers.board_matrix[row][column] == 0 and self.actions.board_matrix[row][column] == 0:
             self.clean_sweep(row, column)
@@ -352,7 +351,14 @@ class Sweep(Action):
             adjacent_cells.append(coordinate)
         if adjacent_flags >= self.numbers.board_matrix[row][column]:
             for coordinate in adjacent_cells:
-                self.recursive_sweep(*coordinate)
+                if self.main.board_matrix[coordinate[0]][coordinate[1]] == 1 and self.actions.board_matrix[coordinate[0]][coordinate[1]] != "f":
+                    display_board.board_reveal()
+                    print("\nyou hit a mine! try again?\n 0: exit\n 1: retry with same settings\n 2: change settings and retry\n")
+                    game_restart()
+                elif self.numbers.board_matrix[coordinate[0]][coordinate[1]] == 0:
+                    self.recursive_sweep(*coordinate)
+                else:
+                    self.clean_sweep(*coordinate)
         else:
             return(print("\ncell has already been swept!\n"))
 
@@ -429,12 +435,14 @@ def game_restart(retry = True):
         generate_boards()
         action_flag.mines_remaining = game.difficulty[2]
         action_flag.flags_remaining = game.difficulty[2]
+        first_sweep()
     elif retry == 2:
         random.seed(random.randrange(10))
         game.difficulty = game.set_difficulty()
         generate_boards()
         action_flag.mines_remaining = game.difficulty[2]
         action_flag.flags_remaining = game.difficulty[2]
+        first_sweep()
 
 # instancing the game object that handles difficulty and seed
 game = Game()
